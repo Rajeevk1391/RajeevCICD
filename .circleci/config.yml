@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
-  slack: circleci/slack@4.2.0
-  aws-cli: circleci/aws-cli@1.3.0
-
+  #slack: circleci/slack@4.2.0
+  #aws-cli: circleci/aws-cli@1.3.0
+  slack: circleci/slack@3.4.2
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -47,105 +47,102 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - run:
-          name: Build front-end
+          name: Install dependencies
           command: |
             cd frontend
-            sudo npm i
-            sudo npm run build
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build2
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
-  build-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
+            npm install
       - run:
-          name: Back-end build
+          name: Compile the code
           command: |
-            cd backend
-            npm i
+            cd frontend
             npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+      - slack/status
 
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - frontend-build2
       - run:
-          name: fronted test
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Test the code
           command: |
             cd frontend
             npm run test
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-# npm install oauth-sign
+      - slack/status
+
+  analyze-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Analyze the code
+          command: |
+            cd frontend
+            npm audit fix --audit-level=critical --force
+      - slack/status
+
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: Compile the code
+          command: |
+            cd backend
+            npm run build
+      - slack/status
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: ["backend-build"]
       - run:
-          name: backend test
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: Test the code
           command: |
             cd backend
             npm run test
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+      - slack/status
 
-  scan-frontend:
+  analyze-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: frontend-build2
       - run:
-          name: frontend scan
+          name: Install dependencies
           command: |
-            cd frontend
-            npm audit fix --audit-level=critical --force
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
-  scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: backend-build2
+            cd backend
+            npm install
       - run:
-          name: backend scan
+          name: Analyze the code
           command: |
             cd backend
             npm audit fix --audit-level=critical --force
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+      - slack/status
 
  # deploy-infrastructure:
  #   docker:
