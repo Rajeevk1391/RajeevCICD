@@ -72,66 +72,69 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - frontend-build2
+      - checkout      
       - run:
           name: fronted test
           command: |
             cd frontend
+            npm install
+      - run:
+          name: Test the code
+          command: |
+            cd frontend
             npm run test
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-# npm install oauth-sign
+      - slack/status
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: ["backend-build"]
       - run:
-          name: backend test
+          name: Install dependencies
           command: |
             cd backend
-            npm run test
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+            npm install
+      - run:
+          name: Compile the code
+          command: |
+            cd backend
+            npm run build
+      - slack/status
 
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: frontend-build2
       - run:
-          name: frontend scan
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Analyze the code
           command: |
             cd frontend
             npm audit fix --audit-level=critical --force
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+      - slack/status
 
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: backend-build2
       - run:
-          name: backend scan
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: Analyze the code
           command: |
             cd backend
             npm audit fix --audit-level=critical --force
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
+      - slack/status
 
  # deploy-infrastructure:
  #   docker:
