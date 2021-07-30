@@ -104,7 +104,7 @@ jobs:
             cd backend
             npm install
       - run:
-          name: Compile the code
+          name: Backend Build
           command: |
             cd backend
             npm run build
