@@ -76,7 +76,7 @@ jobs:
             npm run test
       - slack/status
 
-  analyze-frontend:
+  scan-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -127,7 +127,7 @@ jobs:
             npm run test
       - slack/status
 
-  analyze-backend:
+  scan-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
