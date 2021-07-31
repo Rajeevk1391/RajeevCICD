@@ -49,7 +49,7 @@ jobs:
             cd frontend
             npm install
       - run:
-          name: Compile the code
+          name: Compile the frontend code
           command: |
             cd frontend
             npm run build
@@ -66,7 +66,7 @@ jobs:
             cd frontend
             npm install
       - run:
-          name: Test the code
+          name: Test the frontend code
           command: |
             cd frontend
             npm run test
@@ -83,7 +83,7 @@ jobs:
             cd frontend
             npm install
       - run:
-          name: Analyze the code
+          name: Analyze the frontend code
           command: |
             cd frontend
             npm audit fix --audit-level=critical --force
@@ -117,7 +117,7 @@ jobs:
             cd backend
             npm install
       - run:
-          name: Test the code
+          name: Test the backend code
           command: |
             cd backend
             npm run test
@@ -134,7 +134,7 @@ jobs:
             cd backend
             npm install
       - run:
-          name: Analyze the code
+          name: Analyze the backend-code
           command: |
             cd backend
             npm audit fix --audit-level=critical --force
