@@ -1,35 +1,36 @@
 import { EmployeeRepository } from '../../repositories/employees.repository';
-import { ActivateEmployee } from '../activate-employee.command';
-import { EmployeeActivator } from './employee-activator.handler';
+import { EmployeeAddressUpdater } from './employee-address-updater.handler';
+import { UpdateEmployeeAddress } from '../update-employee-address.command';
 
-describe('Employee Remover', () => {
-  describe('when a user activates an employee', () => {
+describe('Employee Address Updater', () => {
+  describe('when an user updates an employee address', () => {
     const MockEmployeeRepository = jest.fn<EmployeeRepository, []>(
       () =>
         ({
-          findById: jest.fn().mockResolvedValue([]),
           save: jest.fn(),
+          findById: jest.fn().mockResolvedValue([]),
         } as any),
     );
 
     const employeeRepository = new MockEmployeeRepository();
 
-    it('should activate the employee from the repository', async () => {
+    it('should get and employee and add it to the repository', async () => {
       // Arrange
-      const handler = new EmployeeActivator(employeeRepository);
+      const handler = new EmployeeAddressUpdater(employeeRepository);
 
       const params = {
         employeeId: 100,
-        isActive: false,
+        address: 'San Pedro Sula, Calle 1, Casa 5',
+        city: 'San Pedro Sula',
+        country: 'Honduras',
+        region: 'Cortes',
       };
 
-      const activateEmployeeCommand = new ActivateEmployee(
-        params.employeeId,
-        params.isActive,
-      );
+      const updateEmployee = new UpdateEmployeeAddress(params.employeeId, params.address,
+        params.country, params.region, params.city);
 
       // Act
-      await handler.handle(activateEmployeeCommand);
+      await handler.handle(updateEmployee);
 
       // Assert
       expect(employeeRepository.findById).toBeCalledWith(100);
