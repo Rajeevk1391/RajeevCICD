@@ -1,39 +1,38 @@
 import { EmployeeRepository } from '../../repositories/employees.repository';
-import { EmployeeAddressUpdater } from './employee-address-updater.handler';
-import { UpdateEmployeeAddress } from '../update-employee-address.command';
+import { ActivateEmployee } from '../activate-employee.command';
+import { EmployeeActivator } from './employee-activator.handler';
 
-describe('Employee Address Updater', () => {
-  describe('when an user updates an employee address', () => {
+describe('Employee Remover', () => {
+  describe('when a user activates an employee', () => {
     const MockEmployeeRepository = jest.fn<EmployeeRepository, []>(
       () =>
         ({
-          save: jest.fn(),
           findById: jest.fn().mockResolvedValue([]),
+          save: jest.fn(),
         } as any),
     );
 
     const employeeRepository = new MockEmployeeRepository();
 
-    it('should get and employee and add it to the repository', async () => {
+    it('should activate the employee from the repository', async () => {
       // Arrange
-      const handler = new EmployeeAddressUpdater(employeeRepository);
+      const handler = new EmployeeActivator(employeeRepository);
 
       const params = {
-        employeeId: 101,
-        address: 'San Pedro Sula, Calle 1, Casa 5',
-        city: 'San Pedro Sula',
-        country: 'Honduras',
-        region: 'Cortes',
+        employeeId: 100,
+        isActive: false,
       };
 
-      const updateEmployee = new UpdateEmployeeAddress(params.employeeId, params.address,
-        params.country, params.region, params.city);
+      const activateEmployeeCommand = new ActivateEmployee(
+        params.employeeId,
+        params.isActive,
+      );
 
       // Act
-      await handler.handle(updateEmployee);
+      await handler.handle(activateEmployeeCommand);
 
       // Assert
-      expect(employeeRepository.findById).toBeCalledWith(101);
+      expect(employeeRepository.findById).toBeCalledWith(100);
       expect(employeeRepository.save).toBeCalled();
     });
   });
