@@ -19,7 +19,7 @@ describe('Employee Address Updater', () => {
       const handler = new EmployeeAddressUpdater(employeeRepository);
 
       const params = {
-        employeeId: 100,
+        employeeId: 101,
         address: 'San Pedro Sula, Calle 1, Casa 5',
         city: 'San Pedro Sula',
         country: 'Honduras',
@@ -33,7 +33,7 @@ describe('Employee Address Updater', () => {
       await handler.handle(updateEmployee);
 
       // Assert
-      expect(employeeRepository.findById).toBeCalledWith(100);
+      expect(employeeRepository.findById).toBeCalledWith(101);
       expect(employeeRepository.save).toBeCalled();
     });
   });
