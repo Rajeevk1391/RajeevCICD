@@ -230,8 +230,8 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
      - run:
-          name: Deploy frontend objects
-          command: |
+         name: Deploy frontend objects
+         command: |
             export API_URL=$(cat .circleci/api_url.txt)
             echo "${API_URL}" > frontend/.env
             cd frontend
