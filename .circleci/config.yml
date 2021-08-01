@@ -117,65 +117,94 @@ jobs:
     steps:
       - checkout
       - run:
+          name: CDN Stack
+          command: |
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name production-distro --region us-east-1 --parameter-overrides WorkflowID=jkhkdajshkljbl --tags project=udapeople &
+      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
+              --template-file .circleci/files/backend.yml --region=us-east-1\
               --tags project=RajeevCICD-backend \
-              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
-            export BACKEND_URL=$(aws cloudformation describe-stacks \
-              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
-              --query "Stacks[0].Outputs[?OutputKey=='BackendURL'].OutputValue" \
-              --no-paginate --output text)
-            echo $BACKEND_URL
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request PUT --data "${BACKEND_URL}" \
-              https://api.memstash.io/values/backendurl
+              --stack-name "back-end-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=RajeevCICD-frontend \
-              --stack-name frontend-"${CIRCLE_WORKFLOW_ID}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+              --template-file .circleci/files/frontend.yml --region=us-east-1 \
+              --tags Project=RajeevCICD-Frontend \
+              --stack-name "front-end-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            export BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request GET https://api.memstash.io/values/backendurl)
-            echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
-      - run: yum -y install tar gzip
+            yum install -y tar # install the tar
+            yum install -y gzip # install the gzip
+            #aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --no-paginate --output text >> ~/project/.circleci/ansible/inventory.txt
+            aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicDnsName"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --no-paginate --output text >> ~/project/.circleci/ansible/inventory.txt
+            #aws cloudformation list-exports --query "Exports[?Name==\`backendEC2publicdns\`].Value" --no-paginate --output text >> ~/project/.circleci/ansible/inventory.txt
+            cat ~/project/.circleci/ansible/inventory.txt
+#            sed -i '2s/$/ ansible_python_interpreter=\/usr\/bin\/python3/' ~/project/.circleci/ansible/inventory.txt
+
       - persist_to_workspace:
-          root: .circleci/ansible
+          root: ~/
           paths:
-            - inventory.txt
-      # This command has a when: on_fail
+            - project/.circleci/ansible/inventory.txt
+
 #      - destroy-environment:
-#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   configure-infrastructure:
     docker:
-      - image: python:3.9.1-alpine3.12
+      - image: python:3.7-alpine3.11
     steps:
+      - run:
+          name: Install ssh and git and aws cli
+          command: |
+            apk add --update openssh-client #Insatll ssh
+            apk add --update git #Insatll git
+            
+            
       - checkout
       - add_ssh_keys:
           fingerprints:
             - "2b:34:b8:35:02:4c:70:3f:57:d9:7d:e4:b1:0f:2e:41"
-      - attach_workspace:
-          at: /tmp/.circleci/ansible
+     - attach_workspace:
+          at: ~/
+      - run : |
+          cat ~/project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible aws-cli
+            apk add --update tar gzip ansible nodejs npm curl #install the dependencies needed for your playbook
+            pip install awscli # install aws cli
+#            exit 1
+      - run:
+          name: add value in the backend/.env file
+          command: |
+            touch backend/.env
+            #echo NODE_ENV=production >> "backend/.env"
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
       - run:
           name: Configure server
           command: |
-            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+        #  no_output_timeout: 30m
+       
 #      - destroy-environment:
-#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   run-migrations:
     docker:
