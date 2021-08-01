@@ -125,7 +125,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml --region=us-east-2 \
-              --tags RajeevCICD=back-end \
+              --tags RajeevCICDP=back-end \
               --stack-name "back-end-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
  
@@ -135,7 +135,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml --region=us-east-2 \
-              --tags RajeevCICD=front-end \
+              --tags RajeevCICDP=front-end \
               --stack-name "front-end-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
           no_output_timeout: 30m
