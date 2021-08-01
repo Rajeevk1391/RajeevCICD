@@ -145,7 +145,7 @@ jobs:
       - image: amazon/aws-cli
   steps:
     - Checkout 
-    - run:
+      - run:
         name: Ensure back-end infrastructure exists
         command: |
           aws cloudformation deploy \
@@ -154,7 +154,7 @@ jobs:
               # --stack-name "your back-end stack name with workflow id" \
               # --parameter-overrides ID="your workflow id"  
               exit 1
-    - run:
+      - run:
          name: Ensure front-end infrastructure exist
          command: |
            aws cloudformation deploy \
@@ -249,7 +249,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "0c:1c:3f:7d:d4:5f:7d:cd:6a:d7:02:b8:12:72:36:ca"
+            - "2b:34:b8:35:02:4c:70:3f:57:d9:7d:e4:b1:0f:2e:41"
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
