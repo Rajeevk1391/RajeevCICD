@@ -1,5 +1,11 @@
 version: 2.1
 
+parameters:
+  memstash-token:
+    type: string
+    default: "1abcb551-0e4b-4d65-9fcc-4af6c4dc7eb5"
+
+
 commands:
 jobs:
   build-frontend:
