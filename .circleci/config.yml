@@ -1,11 +1,5 @@
 version: 2.1
 
-parameters:
-  memstash-token:
-    type: string
-    default: "1abcb551-0e4b-4d65-9fcc-4af6c4dc7eb5"
-
-
 commands:
 jobs:
   build-frontend:
@@ -21,7 +15,14 @@ jobs:
             cd frontend
             npm install
             npm run build
-     
+       - run:
+          command: |
+            cd frontend
+            npm install oauth-     
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -52,7 +53,10 @@ jobs:
             cat .env
             npm install
             npm run build
- 
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -102,6 +106,7 @@ jobs:
           command: |
             cd backend
             npm audit fix --audit-level=critical --force
+
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
