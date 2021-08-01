@@ -217,7 +217,7 @@ jobs:
       - Checkout 
       - run:
           name: Install dependencies
-         command: |
+          command: |
             yum install -y curl tar sudo
             curl -sL https://rpm.nodesource.com/setup_13.x | sudo bash -
             yum install -y nodejs
