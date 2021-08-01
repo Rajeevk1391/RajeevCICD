@@ -117,6 +117,10 @@ jobs:
     steps:
       - checkout
       - run:
+          name: CDN Stack
+          command: |
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name production-distro --region us-east-1 --parameter-overrides WorkflowID=jkhkdajshkljbl --tags project=udapeople &
+      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
