@@ -150,18 +150,18 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your back-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
+              --tags project=RajeevCICD-backend \
+              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" 
               exit 1
       - run:
          name: Ensure front-end infrastructure exist
          command: |
            aws cloudformation deploy \
              --template-file .circleci/files/frontend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your front-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
+              --tags project=RajeevCICD-frontend \
+              --stack-name frontend-"${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
               exit 1
       - run:
           name: Add back-end ip to ansible inventory
