@@ -171,7 +171,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "2b:34:b8:35:02:4c:70:3f:57:d9:7d:e4:b1:0f:2e:41"
-     - attach_workspace:
+      - attach_workspace:
           at: ~/
       - run : |
           cat ~/project/.circleci/ansible/inventory.txt
