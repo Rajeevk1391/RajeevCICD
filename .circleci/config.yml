@@ -144,8 +144,8 @@ jobs:
           paths:
             - inventory.txt
       # This command has a when: on_fail
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   configure-infrastructure:
     docker:
@@ -165,8 +165,8 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   run-migrations:
     docker:
@@ -218,8 +218,8 @@ jobs:
           paths:
             - backend
 
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   # after run migrations jobs succeeds, now the destroy-environment command will need to be run
   # in an image that supports nodejs 13
@@ -254,8 +254,8 @@ jobs:
             npm i
             npm run build
             aws s3 cp dist s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}
+#      - destroy-environment:
+#          workflow_id: ${CIRCLE_WORKFLOW_ID}
 
   deploy-backend:
     docker:
@@ -284,8 +284,8 @@ jobs:
             cd .circleci/ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
 
 workflows:
