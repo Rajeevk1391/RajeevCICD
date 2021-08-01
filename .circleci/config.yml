@@ -229,7 +229,7 @@ jobs:
             --request GET https://api.memstash.io/values/backendurl)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-     - run:
+      - run:
          name: Deploy frontend objects
          command: |
             export API_URL=$(cat .circleci/api_url.txt)
