@@ -120,42 +120,38 @@ jobs:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --tags project=RajeevCICD-backend \
-              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
-            export BACKEND_URL=$(aws cloudformation describe-stacks \
-              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
-              --query "Stacks[0].Outputs[?OutputKey=='BackendURL'].OutputValue" \
-              --no-paginate --output text)
-            echo $BACKEND_URL
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request PUT --data "${BACKEND_URL}" \
-              https://api.memstash.io/values/backendurl
+              --template-file .circleci/files/backend.yml --region=us-east-1 \
+              --tags Project=RajeevCICD-backend \
+              --stack-name "back-end-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
+ 
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-frontend \
-              --stack-name frontend-"${CIRCLE_WORKFLOW_ID}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+              --template-file .circleci/files/frontend.yml --region=us-east-1 \
+              --tags Project=RajeevCICD-frontend \
+              --stack-name "front-end-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+          no_output_timeout: 30m
+
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            export BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request GET https://api.memstash.io/values/backendurl)
-            echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
-      - run: yum -y install tar gzip
-      - persist_to_workspace:
-          root: .circleci/ansible
-          paths:
-            - inventory.txt
-      # This command has a when: on_fail
-#      - destroy-environment:
-#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+            yum install -y tar # install the tar
+            yum install -y gzip # install the gzip
+            aws cloudformation list-exports --query "Exports[?Name==\`backendEC2publicdns\`].Value" --no-paginate --output text >> ~/project/.circleci/ansible/inventory.txt
+            cat ~/project/.circleci/ansible/inventory.txt        
 
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure   
+#      - destroy-environment:
+#          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+    
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
