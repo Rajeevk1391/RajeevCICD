@@ -259,7 +259,6 @@ jobs:
 
 #      - destroy-environment:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID}"
-
   # after run migrations jobs succeeds, now the destroy-environment command will need to be run
   # in an image that supports nodejs 13
 
