@@ -230,7 +230,6 @@ jobs:
             TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
             TYPEORM_DATABASE=${TYPEORM_DATABASE}
             EOF
-            cat backend/.env
       - run:
           name: Install dependencies
           command: |
@@ -249,12 +248,10 @@ jobs:
               return 1
             fi
             if cat migration-log.txt | grep "has been executed successfully"; then
-            curl -H "Content-Type: text/plain" -H "token: 96c4ffbc-21de-4e0a-bdb2-b5a923731f3f" \
-            --request PUT --data "1" https://api.memstash.io/values/migration
-       #      curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-       #      --request PUT --data "1" \
-       #     https://api.memstash.io/values/migration-"${CIRCLE_WORKFLOW_ID}"
-       #     fi
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+                --request PUT --data "1" \
+                https://api.memstash.io/values/migration-"${CIRCLE_WORKFLOW_ID}"
+            fi
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -262,6 +259,10 @@ jobs:
 
 #      - destroy-environment:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+       #      curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+       #      --request PUT --data "1" \
+       #     https://api.memstash.io/values/migration-"${CIRCLE_WORKFLOW_ID}"
+       #     fi
   # after run migrations jobs succeeds, now the destroy-environment command will need to be run
   # in an image that supports nodejs 13
 
