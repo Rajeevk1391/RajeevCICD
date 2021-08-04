@@ -261,64 +261,101 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
+      - run:
+          name: Install PIP and aws cli
+          command: |
+            sudo apt-get install python-pip python-dev
+            sudo pip install awscli
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - run:
           name: Install dependencies
           command: |
-            yum install -y curl tar sudo
-            curl -sL https://rpm.nodesource.com/setup_13.x | sudo bash -
-            yum install -y nodejs
-            node --version
+            cd frontend
+            npm install
+            
+      - attach_workspace:
+          at: ~/
       - run:
           name: Get backend url
           command: |
-            export API_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request GET https://api.memstash.io/values/backendurl)
-            export API_URL="http://${API_URL}:3030"
-            echo "${API_URL}" > .circleci/api_url.txt
+            BACKEND_IP=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --no-paginate --output text)
+            #BACKEND_DNS=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicDnsName"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --no-paginate --output text)
+            #BACKEND_IP=`cat ~/project/.circleci/ansible/inventory.txt|tail -1`
+            echo ${BACKEND_IP}
+            echo NODE_ENV=production >> "frontend/.env"
+            #echo ENVIRONMENT=production >> "frontend/.env"
+            echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"  # to send beckedn url to frontend env
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            cat frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
-            export API_URL=$(cat .circleci/api_url.txt)
-            echo "${API_URL}" > frontend/.env
             cd frontend
-            npm i
+            npm install
             npm run build
-            aws s3 cp dist s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
- #     - destroy-environment:
- #         workflow_id: ${CIRCLE_WORKFLOW_ID}
-
+            aws s3 cp --recursive ./dist/ s3://udapeople-${CIRCLE_WORKFLOW_ID}
+        
+      - revert-migrations
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}    
+#      # Here's where you will add some code to rollback on failure      
+#                    
   deploy-backend:
     docker:
-      - image: python:3.9.1-alpine3.12
+      - image: python:3.7-alpine3.11
+      # Docker image here that supports Ansible
     steps:
+      - run:
+          name: Install ssh and git and aws cli
+          command: |
+            apk add --update openssh-client #Insatll ssh
+            apk add --update git #Insatll git
+            apk add --update tar gzip curl nodejs tree
+            apk add --update npm
+            pip install awscli # install aws cli
+            
+      # Checkout code from git
+      # Add ssh keys with fingerprint
+      # attach workspace
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "7a:51:3c:5a:6c:f2:bf:3a:2f:58:18:fa:8f:38:e0:b3"
-      - restore_cache:
-          keys: [backend-build]
+          fingerprints: ["7a:51:3c:5a:6c:f2:bf:3a:2f:58:18:fa:8f:38:e0:b3"] # You can get this ID in the section where you registered the SSH Key
       - attach_workspace:
-          at: /tmp/artifacts
+          at: ~/
+      - run : |
+          cat ~/project/.circleci/ansible/inventory.txt
       - run:
           name: Install dependencies
           command: |
-            apk update
-            apk add --update ansible aws-cli openssh-client tar
+            # your code here
+            apk add --update ansible #install the dependencies needed for your playbook
+            
       - run:
-          name: compress backend
+          name: add value in the backend/.env file
           command: |
-            tar -C /tmp/artifacts/backend -czvf artifact.tar.gz .
+            
+            echo NODE_ENV=production >> "backend/.env"
+            #echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cat /root/project/backend/.env
+            tar -czvf backend.tar.gz backend
       - run:
           name: Deploy backend
           command: |
-            cd .circleci/ansible
+            npm install webpack-dev-server -g
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
  #     - destroy-environment:
  #         workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
