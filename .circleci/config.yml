@@ -359,6 +359,56 @@ jobs:
  #     - destroy-environment:
  #         workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
+ smoke-test:
+    docker:
+     - image: python:3.7-alpine3.11 
+
+    steps:
+      - run:
+          name: Install dependencies ssh and git and aws cli
+          command: |
+            apk add --update openssh-client #Insatll ssh
+            apk add --update git #Insatll git
+            apk add --update tar gzip curl nodejs tree
+            apk add --update npm
+            pip install awscli # install aws cli
+      # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: ~/
+          
+      - run:
+          name: Get backend url for back end smoke test
+          command: |
+            BACKEND_IP=`(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --no-paginate --output text)`
+            #BACKEND_IP=`cat ~/project/.circleci/ansible/inventory.txt|tail -1`
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+      - run:
+          name: Backend smoke test.
+          command: |
+            if curl -is ${API_URL}/api/status|grep "200" ; then  echo "backend smoke test passed"; else echo "backend smoke test failed"; fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            # your code here
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-2.amazonaws.com"
+            echo Frontend_URL: ${URL}
+            #if curl -s ${URL} | grep "Welcome"; then  echo "frontend smoke test passed"; else  echo "frontend smoke test failed"; fi
+            if curl -s ${URL} | grep "Welcome"
+            then
+              return 0
+              exit 1 # to get failed teh smoke test to take the screenshot 
+            else
+              return 1
+            fi
+
+  #    - revert-migrations
+  #    - destroy-environment:
+  #        workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}                
+      # Here's where you will add some code to rollback on failure            
+            
+
 workflows:
   default:
     jobs:
@@ -385,3 +435,11 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
+      - smoke-test:
+         requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
+         
+     
