@@ -234,12 +234,25 @@ jobs:
             echo "RUNNING POSTGRES DATABASE MIGRATIONS"
             npm run migrations > migration.log
             cat migration.log
+#      - run:
+#          name: Install dependencies
+#          command: |
+#            sudo apt update
+#            sudo apt install -y awscli
       - run:
-          name: Install dependencies
+          name: Send migration results to memstash
+          working_directory: ./backend
           command: |
-            sudo apt update
-            sudo apt install -y awscli
-      
+            if [[ $(grep -i "has been executed successfully" migration.log | wc -l) -ge 1 ]]; then
+                echo "has been executed successfully EXECUTED THE DATABASE MIGRATIONS"
+                curl -H "Content-Type: text/plain" -H "token: 96c4ffbc-21de-4e0a-bdb2-b5a923731f3f" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              else
+                echo "FAILED TO RUN THE DATABASE MIGRATIONS"
+                curl -H "Content-Type: text/plain" -H "token: 96c4ffbc-21de-4e0a-bdb2-b5a923731f3f" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              fi
+              echo "STORING THE RESULTS OF THE DATABASE MIGRATIONS IN MEMSTASH FOR LATER EVALUATION"
+#      - destroy-environment
+
 
 #      - destroy-environment:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID}"
