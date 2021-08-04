@@ -289,8 +289,8 @@ jobs:
             npm i
             npm run build
             aws s3 cp dist s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
-#      - destroy-environment:
-#          workflow_id: ${CIRCLE_WORKFLOW_ID}
+ #     - destroy-environment:
+ #         workflow_id: ${CIRCLE_WORKFLOW_ID}
 
   deploy-backend:
     docker:
@@ -299,7 +299,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "2b:34:b8:35:02:4c:70:3f:57:d9:7d:e4:b1:0f:2e:41"
+            - "0c:1c:3f:7d:d4:5f:7d:cd:6a:d7:02:b8:12:72:36:ca"
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
@@ -319,9 +319,8 @@ jobs:
             cd .circleci/ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
-#      - destroy-environment:
-#          workflow_id: "${CIRCLE_WORKFLOW_ID}"
-
+ #     - destroy-environment:
+ #         workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
 workflows:
   default:
