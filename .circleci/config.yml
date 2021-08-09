@@ -157,16 +157,16 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=RajeevCICD \
-              --stack-name "udapeople-beckend-${CIRCLE_WORKFLOW_ID}" \
+              --tags project=udapeople-project3 \
+              --stack-name "udapeople-be-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=RajeevCICD \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
+              --tags project=udapeople-project3 \
+              --stack-name "udapeople-fe-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
           name: Add back-end ip to ansible inventory
@@ -185,7 +185,7 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
             --output text)
             echo "Backend URL": $BackendURL
-            curl -H "Content-Type: text/plain" -H "token: RajeevCICD-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
+            curl -H "Content-Type: text/plain" -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
       - run:
           name: Install tar/gzip utility
           command: |
@@ -196,7 +196,7 @@ jobs:
             - inventory.txt
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
-          
+             
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
