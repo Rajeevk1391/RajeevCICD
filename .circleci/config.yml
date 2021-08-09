@@ -60,10 +60,10 @@ jobs:
             npm install
             npm run build
             exit 0
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
-      - slack/status
+      #- save_cache:
+          # paths: [frontend/node_modules]
+          # key: frontend-build
+      #- slack/status
                  
   build-backend:
     docker:
@@ -79,10 +79,10 @@ jobs:
              cd backend
              npm install
              npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-      - slack/status
+      #- save_cache:
+          # paths: [backend/node_modules]
+          # key: backend-build
+      #- slack/status
           
   test-frontend:
     docker:
@@ -97,10 +97,10 @@ jobs:
              cd frontend
              npm install
              npm run test
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-test
-      - slack/status
+      #- save_cache:
+          # paths: [frontend/node_modules]
+          # key: frontend-test
+      #- slack/status
                 
   test-backend:
     docker:
@@ -115,10 +115,10 @@ jobs:
              cd backend
              npm install
              npm run test
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-test
-      - slack/status
+      #- save_cache:
+          # paths: [backend/node_modules]
+          # key: backend-test
+      #- slack/status
           
   scan-frontend:
     docker:
@@ -133,10 +133,10 @@ jobs:
              cd frontend
              npm install
              npm audit fix --audit-level=critical --force
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-scan
-      - slack/status
+      #- save_cache:
+          # paths: [frontend/node_modules]
+          # key: frontend-scan
+      #- slack/status
 
   scan-backend:
     docker:
@@ -151,10 +151,10 @@ jobs:
              cd backend
              npm install
              npm audit fix --audit-level=critical --force
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-scan
-      - slack/status
+      #- save_cache:
+          # paths: [backend/node_modules]
+          # key: backend-scan
+      #- slack/status
       
   deploy-infrastructure:
     docker:
