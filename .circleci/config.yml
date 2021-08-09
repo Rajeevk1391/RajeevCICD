@@ -192,7 +192,7 @@ jobs:
             yum -y install tar gzip
       - persist_to_workspace:
           root: .circleci/ansible
-          # paths:
+          paths:
             - inventory.txt
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
