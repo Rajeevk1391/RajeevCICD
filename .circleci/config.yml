@@ -36,7 +36,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl -H "token: udapeople-project3-migration-<<parameters.workflow_id>>" --request GET https://api.memstash.io/values/migration_<<parameters.workflow_id>>)
+            SUCCESS=$(curl -H "token: RajeevCICD-migration-<<parameters.workflow_id>>" --request GET https://api.memstash.io/values/migration_<<parameters.workflow_id>>)
             if(( $SUCCESS==1 )); 
             then
               cd ~/project/backend
@@ -157,7 +157,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=udapeople-project3 \
+              --tags project=RajeevCICD \
               --stack-name "udapeople-beckend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
@@ -165,7 +165,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-project3 \
+              --tags project=RajeevCICD \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
@@ -185,14 +185,14 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
             --output text)
             echo "Backend URL": $BackendURL
-            curl -H "Content-Type: text/plain" -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
+            curl -H "Content-Type: text/plain" -H "token: RajeevCICD-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
       - run:
           name: Install tar/gzip utility
           command: |
             yum -y install tar gzip
       - persist_to_workspace:
           root: .circleci/ansible
-          paths:
+          # paths:
             - inventory.txt
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
@@ -238,9 +238,9 @@ jobs:
             cd backend
             if grep -q "has been executed successfully." migrations_file.txt
             then
-              curl -H "Content-Type: text/plain" -H "token: udapeople-project3-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: RajeevCICD-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
             else
-              echo $(curl -H "Content-Type: text/plain" -H "token: udapeople-project3-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
+              echo $(curl -H "Content-Type: text/plain" -H "token: RajeevCICD-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
             fi
       # Here's where you will add some code to rollback on failure                
       - destroy-environment:
@@ -266,7 +266,7 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            BACKEND_URL=$(curl -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID})
+            BACKEND_URL=$(curl -H "token: RajeevCICD-BackendURL-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID})
             export API_URL="http://${BACKEND_URL}:3030"
             echo "${API_URL}" >> .circleci/Backend_URL.txt
       - run:
@@ -341,7 +341,7 @@ jobs:
       - run:
           name: Get backend url
           command: |          
-              curl -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" \
+              curl -H "token: RajeevCICD-BackendURL-${CIRCLE_WORKFLOW_ID}" \
                 --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID} \
                 > .circleci/Backend_URL.txt
       - run:
@@ -386,7 +386,7 @@ jobs:
                           list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
                           --no-paginate --output text | tr -d '\n')
             echo $OldWorkflowID               
-            curl -H "Content-Type: text/plain" -H "token: udapeople-project3-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
+            curl -H "Content-Type: text/plain" -H "token: RajeevCICD-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
                         --request PUT --data "${OldWorkflowID}" \
                         https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID}            
       - run:
@@ -395,7 +395,7 @@ jobs:
               aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
               --stack-name udapeople-cloudfront \
-              --tags project=udapeople-project3 \
+              --tags project=RajeevCICD \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"       
               
       - destroy-environment:
@@ -412,7 +412,7 @@ jobs:
           name: Cleanup the Environment for Old Workflow ID
           command: |
             # get old WorkFlowId            
-            export OldWorkflowID=$(curl -H "token: udapeople-project3-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID})
+            export OldWorkflowID=$(curl -H "token: RajeevCICD-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID})
             echo "Old Workflow ID: " $OldWorkflowID
             
             # get all stacks
