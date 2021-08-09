@@ -63,7 +63,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/status
+#      - slack/status
                  
   build-backend:
     docker:
@@ -82,7 +82,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/status
+#      - slack/status
           
   test-frontend:
     docker:
@@ -100,7 +100,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-test
-      - slack/status
+#      - slack/status
                 
   test-backend:
     docker:
@@ -118,9 +118,9 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
-      - slack/status
+#      - slack/status
           
-          
+
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -137,7 +137,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-scan
-      - slack/status
+#      - slack/status
 
   scan-backend:
     docker:
@@ -155,7 +155,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
-      - slack/status
+#      - slack/status
       
   deploy-infrastructure:
     docker:
