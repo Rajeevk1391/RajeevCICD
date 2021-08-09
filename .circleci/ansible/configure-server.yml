@@ -1,5 +1,4 @@
 ---
-
 - name: "configuration play." 
   hosts: web
   user: ubuntu
@@ -8,26 +7,32 @@
     - ansible_python_interpreter: /usr/bin/python3
     - ansible_host_key_checking: false
     - ansible_stdout_callback: yaml
-    
-  environment:
-    #NODE_ENV: production
-    ENVIRONMENT: production
-    TYPEORM_CONNECTION: postgres
-    TYPEORM_MIGRATIONS_DIR: ./src/migrations
-    TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
-    TYPEORM_MIGRATIONS: ./src/migrations/*.ts
-    TYPEORM_HOST: database2.ccnjrqsd8sw4.us-east-2.rds.amazonaws.com
-    TYPEORM_PORT: 5432
-    TYPEORM_USERNAME: postgres
-    TYPEORM_PASSWORD: mypassword
-    TYPEORM_DATABASE: database2
-    API_URL: "{{ lookup('env','API_URL') }}"
-    
+
+
   pre_tasks:
     - name: "wait 600 seconds for target connection to become reachable/usable."
+      # Your code here
       wait_for_connection:
-        delay: 60
-        timeout: 600
- 
+
+    - name: "install python for Ansible."
+      # Your code here
+      become: true
+      apt:
+        name: "python3"
+        state: latest
+        update_cache: yes
+        
   roles:
+    # Your code here
     - configure-server
+    - configure-prometheus-node-exporter
+    
+  environment:
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+    TYPEORM_ENTITIES: "./src/modules/domain/**/*.entity.ts"
+    TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+    TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+    TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+    TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+    TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
