@@ -362,6 +362,7 @@ jobs:
             url="http://${url}:3030/api/status"
             echo $url
             curl $url
+            
       - run:
           name: Frontend smoke test.
           command: |
