@@ -372,7 +372,7 @@ jobs:
               echo "Successful front-end Smoke-test"
             else
               echo "Unsuccessful front-end Smoke-test"
-              exit 1
+           #   exit 1
             fi
 #      - destroy-environment:
 #          workflow_id: ${CIRCLE_WORKFLOW_ID}
@@ -409,10 +409,10 @@ jobs:
               --tags project=udapeople-project3 \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"       
               
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}
-      - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID}          
+  #    - destroy-environment:
+  #        workflow_id: ${CIRCLE_WORKFLOW_ID}
+  #    - revert-migrations:
+  #        workflow_id: ${CIRCLE_WORKFLOW_ID}          
        
   cleanup:
     docker:
