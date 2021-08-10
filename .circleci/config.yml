@@ -365,18 +365,18 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-2.amazonaws.com"
-            echo Frontend_URL: ${URL}
-            #if curl -s ${URL} | grep "Welcome"; then  echo "frontend smoke test passed"; else  echo "frontend smoke test failed"; fi
+		    URL="https://udapeople-42c915df-f105-4339-acea-7a66924f7772.s3.us-east-2.amazonaws.com/index.html#/employees
+			URL="https://udapeople-${CIRCLE_WORKFLOW_ID}.s3.us-east-2.amazonaws.com/index.html#/employees"
+            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-2.amazonaws.com"
+            echo " URL " $URL
             if curl -s ${URL} | grep "Welcome"
             then
-              return 0
-              exit 1 # to get failed teh smoke test to take the screenshot 
+              echo "Successful front-end Smoke-test"
             else
-              return 1
+              echo "Unsuccessful front-end Smoke-test"
+              exit 1
             fi
-#      - destroy-environment:
+            #      - destroy-environment:
 #          workflow_id: ${CIRCLE_WORKFLOW_ID}
 #      - revert-migrations:
 #          workflow_id: ${CIRCLE_WORKFLOW_ID}
