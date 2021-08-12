@@ -359,7 +359,7 @@ jobs:
           name: Backend smoke test.
           command: |
             url=$(cat .circleci/Backend_URL.txt)
-            url="https://${url}:3030/api/status"
+            url="http://${url}:3030/api/status"
             echo $url
             curl $url
 
