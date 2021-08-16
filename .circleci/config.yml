@@ -1,6 +1,5 @@
 version: 2.1
 
-
 orbs:
   node: circleci/node@3.0.0
   slack: circleci/slack@3.4.2
@@ -21,8 +20,8 @@ commands:
             aws s3 rb s3://udapeople-<<parameters.workflow_id>> --force                 
             
             # Delete the stacks
-            aws cloudformation delete-stack --stack-name udapeople-be-<<parameters.workflow_id>>
-            aws cloudformation delete-stack --stack-name udapeople-fe-<<parameters.workflow_id>>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
             
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -36,7 +35,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl -H "token: udapeople-project3-migration-<<parameters.workflow_id>>" --request GET https://api.memstash.io/values/migration_<<parameters.workflow_id>>)
+            SUCCESS=$(curl -H "token: udapeople-cicd-migration-<<parameters.workflow_id>>" --request GET https://api.memstash.io/values/migration_<<parameters.workflow_id>>)
             if(( $SUCCESS==1 )); 
             then
               cd ~/project/backend
@@ -63,7 +62,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-#      - slack/status
                  
   build-backend:
     docker:
@@ -82,7 +80,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-#      - slack/status
           
   test-frontend:
     docker:
@@ -100,7 +97,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-test
-#      - slack/status
                 
   test-backend:
     docker:
@@ -118,9 +114,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
-#      - slack/status
-          
-
+     
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -137,7 +131,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-scan
-#      - slack/status
 
   scan-backend:
     docker:
@@ -155,7 +148,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
-#      - slack/status
       
   deploy-infrastructure:
     docker:
@@ -167,16 +159,16 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=udapeople-project3 \
-              --stack-name "udapeople-be-${CIRCLE_WORKFLOW_ID}" \
+              --tags project=udapeople-cicd \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-project3 \
-              --stack-name "udapeople-fe-${CIRCLE_WORKFLOW_ID}" \
+              --tags project=udapeople-cicd \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
       - run:
           name: Add back-end ip to ansible inventory
@@ -195,7 +187,7 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
             --output text)
             echo "Backend URL": $BackendURL
-            curl -H "Content-Type: text/plain" -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
+            curl -H "Content-Type: text/plain" -H "token: udapeople-cicd-BackendURL-${CIRCLE_WORKFLOW_ID}" --request PUT --data "$BackendURL" https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID}
       - run:
           name: Install tar/gzip utility
           command: |
@@ -249,11 +241,10 @@ jobs:
             cd backend
             if grep -q "has been executed successfully." migrations_file.txt
             then
-              curl -H "Content-Type: text/plain" -H "token: udapeople-project3-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: udapeople-cicd-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
             else
-              echo $(curl -H "Content-Type: text/plain" -H "token: udapeople-project3-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
+              echo $(curl -H "Content-Type: text/plain" -H "token: udapeople-cicd-migration-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
             fi
-      # Here's where you will add some code to rollback on failure                
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
@@ -277,7 +268,7 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            BACKEND_URL=$(curl -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID})
+            BACKEND_URL=$(curl -H "token: udapeople-cicd-BackendURL-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID})
             export API_URL="http://${BACKEND_URL}:3030"
             echo "${API_URL}" >> .circleci/Backend_URL.txt
       - run:
@@ -332,7 +323,6 @@ jobs:
                         
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i  /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-      # Here's where you will add somecode to rollback on failure 
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
@@ -352,7 +342,7 @@ jobs:
       - run:
           name: Get backend url
           command: |          
-              curl -H "token: udapeople-project3-BackendURL-${CIRCLE_WORKFLOW_ID}" \
+              curl -H "token: udapeople-cicd-BackendURL-${CIRCLE_WORKFLOW_ID}" \
                 --request GET https://api.memstash.io/values/BackendURL_${CIRCLE_WORKFLOW_ID} \
                 > .circleci/Backend_URL.txt
       - run:
@@ -397,7 +387,7 @@ jobs:
                           list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
                           --no-paginate --output text | tr -d '\n')
             echo $OldWorkflowID               
-            curl -H "Content-Type: text/plain" -H "token: udapeople-project3-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
+            curl -H "Content-Type: text/plain" -H "token: udapeople-cicd-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
                         --request PUT --data "${OldWorkflowID}" \
                         https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID}            
       - run:
@@ -406,7 +396,7 @@ jobs:
               aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
               --stack-name udapeople-cloudfront \
-              --tags project=udapeople-project3 \
+              --tags project=udapeople-cicd \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"       
               
       - destroy-environment:
@@ -424,7 +414,7 @@ jobs:
           name: Cleanup the Environment for Old Workflow ID
           command: |
             # get old WorkFlowId            
-            export OldWorkflowID=$(curl -H "token: udapeople-project3-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID})
+            export OldWorkflowID=$(curl -H "token: udapeople-cicd-OldWorkflowID-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/OldWorkflowID_${CIRCLE_WORKFLOW_ID})
             echo "Old Workflow ID: " $OldWorkflowID
             
             # get all stacks
@@ -439,8 +429,8 @@ jobs:
                  if [[ "${STACKS[i]:13}" =~ "${OldWorkflowID}" ]]
                  then
                     aws s3 rm s3://udapeople-"${STACKS[i]:13}" --recursive
-                    aws cloudformation delete-stack --stack-name udapeople-fe-"${STACKS[i]:13}"
-                    aws cloudformation delete-stack --stack-name udapeople-be-"${STACKS[i]:13}"
+                    aws cloudformation delete-stack --stack-name udapeople-frontend-"${STACKS[i]:13}"
+                    aws cloudformation delete-stack --stack-name udapeople-backend-"${STACKS[i]:13}"
                  fi
               done
 
