@@ -1,0 +1,5 @@
+1. GitHub URL-  https://github.com/Rajeevk1391/RajeevCICD
+2. S3 Bucket URL - http://udapeople-47fb8c25-80e8-491a-be31-43bb852f8430.s3.us-east-2.amazonaws.com/index.html
+3. CloudFront distribution URL- http://d33aaaid52ilfn.cloudfront.net
+4. back-end EC2 URL- ec2-18-223-100-79.us-east-2.compute.amazonaws.com
+5. Prometheus Server URL-  ec2-3-12-149-145.us-east-2.compute.amazonaws.com
